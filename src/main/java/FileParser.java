@@ -1,14 +1,12 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.*;
 import java.util.*;
 
 public class FileParser {
-    private static final String ABSOLUTE_PATH = "src/main/resources/task1.txt";
-    private static final String ABSOLUTE_PATH2 = "src/main/resources/task3.txt";
-    public void parserOfPhoneNumbers() {
-        File file = new File(ABSOLUTE_PATH);
+    public void parsePhoneNumbers() {
+        File file = new File("src/main/resources/task1.txt");
         checkIfFileAvailable(file);
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -28,8 +26,49 @@ public class FileParser {
         }
     }
 
-    public void counterOfWordsFrequency() {
-        File file = new File(ABSOLUTE_PATH2);
+    public void createJsonFile() {
+        File fileFrom = new File("src/main/resources/task2.txt");
+        checkIfFileAvailable(fileFrom);
+        List<User> userArrays = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileFrom))) {
+            String line = reader.readLine();
+
+            int i = 0;
+            while (line != null) {
+                if (i == 0) {
+                    i++;
+                    line = reader.readLine();
+                    continue;
+                }
+                if (line.isEmpty()) {
+                    line = reader.readLine();
+                    continue;
+                }
+
+                String userName = line.split("\\s+")[0];
+                int userAge = Integer.parseInt(line.split("\\s+")[1]);
+                userArrays.add(new User(userName, userAge));
+
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String jsonString = gson.toJson(userArrays);
+
+        File fileTo = new File("src/main/resources/user.json");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileTo))) {
+            writer.write(jsonString);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public void countWordsFrequency() {
+        File file = new File("src/main/resources/task3.txt");
         checkIfFileAvailable(file);
 
         HashMap<String, Integer> map = new HashMap<>();
@@ -78,11 +117,31 @@ public class FileParser {
     public static void main(String[] args) {
         FileParser fileParser = new FileParser();
         System.out.println("--- Task #1 ---");
-        fileParser.parserOfPhoneNumbers();
+        fileParser.parsePhoneNumbers();
+        System.out.println();
+        System.out.println("--- Task #2 ---");
+        fileParser.createJsonFile();
+        System.out.println("Create new data in json file");
         System.out.println();
         System.out.println("--- Task #3 ---");
-        fileParser.counterOfWordsFrequency();
+        fileParser.countWordsFrequency();
+    }
+}
+
+class User {
+    private String name;
+    private int age;
+
+    public User(String name, int age) {
+        this.name = name;
+        this.age = age;
     }
 
-
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
 }
